@@ -22,7 +22,7 @@ spec:
       - name: nginx
         image: nginx:1.25-alpine
         ports:
-        - containerPort: 8080
+        - containerPort: 8080       # non-root safe
         volumeMounts:
         - name: nginx-cache
           mountPath: /var/cache/nginx
@@ -40,8 +40,8 @@ spec:
     app: nginx-demo
   ports:
   - protocol: TCP
-    port: 80
-    targetPort: 8080
+    port: 80                     # external port
+    targetPort: 8080             # maps to container
   type: ClusterIP
 ---
 apiVersion: route.openshift.io/v1
