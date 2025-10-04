@@ -1,37 +1,32 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: demo-nginx
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-demo
+  name: demo-httpd
   namespace: demo-nginx
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx-demo
+      app: demo-httpd
   template:
     metadata:
       labels:
-        app: nginx-demo
+        app: demo-httpd
     spec:
       containers:
-      - name: nginx
-        image: nginx:alpine
+      - name: httpd
+        image: httpd:alpine
         ports:
-        - containerPort: 8080   # non-privileged port
+        - containerPort: 8080
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-demo
+  name: demo-httpd
   namespace: demo-nginx
 spec:
   selector:
-    app: nginx-demo
+    app: demo-httpd
   ports:
   - protocol: TCP
     port: 80
@@ -41,12 +36,12 @@ spec:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: nginx-demo
+  name: demo-httpd
   namespace: demo-nginx
 spec:
   to:
     kind: Service
-    name: nginx-demo
+    name: demo-httpd
   port:
     targetPort: 80
   tls:
