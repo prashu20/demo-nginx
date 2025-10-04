@@ -1,49 +1,57 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-web
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demo-httpd
-  namespace: demo-nginx
+  name: demo-web
+  namespace: demo-web
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: demo-httpd
+      app: demo-web
   template:
     metadata:
       labels:
-        app: demo-httpd
+        app: demo-web
     spec:
       containers:
-      - name: httpd
-        # Use high port
-        image: httpd:alpine
-        command: ["httpd", "-DFOREGROUND", "-f", "/usr/local/apache2/conf/httpd.conf", "-k", "start"]
+      - name: web
+        image: registry.redhat.io/ubi8/nodejs-22-minimal
         ports:
         - containerPort: 8080
+        env:
+        - name: NODE_ENV
+          value: "production"
+        command: ["node"]
+        args: ["-e", "require('http').createServer((req,res)=>res.end('Hello from OpenShift!')).listen(8080)"]
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: demo-httpd
-  namespace: demo-nginx
+  name: demo-web
+  namespace: demo-web
 spec:
   selector:
-    app: demo-httpd
+    app: demo-web
   ports:
   - protocol: TCP
-    port: 80       # Route will use this
+    port: 80
     targetPort: 8080
   type: ClusterIP
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: demo-httpd
-  namespace: demo-nginx
+  name: demo-web
+  namespace: demo-web
 spec:
   to:
     kind: Service
-    name: demo-httpd
+    name: demo-web
   port:
     targetPort: 80
   tls:
