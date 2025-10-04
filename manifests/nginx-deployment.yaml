@@ -20,16 +20,15 @@ spec:
     spec:
       containers:
       - name: nginx
-        # OpenShift-friendly Nginx image
-        image: registry.access.redhat.com/ubi8/nginx-118:latest
+        image: nginx:1.25-alpine
         ports:
-        - containerPort: 8080  # high port avoids root requirement
+        - containerPort: 8080  # non-root safe
         volumeMounts:
         - name: nginx-cache
           mountPath: /var/cache/nginx
       volumes:
       - name: nginx-cache
-        emptyDir: {}  # writable by non-root
+        emptyDir: {}  # writable ephemeral storage
 ---
 apiVersion: v1
 kind: Service
@@ -41,7 +40,7 @@ spec:
     app: nginx-demo
   ports:
   - protocol: TCP
-    port: 80       # external
+    port: 80       # external port
     targetPort: 8080  # container port
   type: ClusterIP
 ---
@@ -58,4 +57,19 @@ spec:
     targetPort: 80
   tls:
     termination: edge
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-demo-app
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/YOUR_GITHUB_USER/YOUR_REPO.git'
+    path: 'nginx-gitops'
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: demo-nginx
 
