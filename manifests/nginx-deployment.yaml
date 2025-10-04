@@ -1,8 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-nginx
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-demo
-  namespace: demo-nginx  # your test namespace
+  namespace: demo-nginx
 spec:
   replicas: 1
   selector:
@@ -15,16 +20,16 @@ spec:
     spec:
       containers:
       - name: nginx
-        # Use OpenShift-friendly Nginx image
+        # OpenShift-friendly Nginx image
         image: registry.access.redhat.com/ubi8/nginx-118:latest
         ports:
-        - containerPort: 8080  # high port to avoid root requirement
+        - containerPort: 8080  # high port avoids root requirement
         volumeMounts:
         - name: nginx-cache
           mountPath: /var/cache/nginx
       volumes:
       - name: nginx-cache
-        emptyDir: {}  # ephemeral, writable by non-root
+        emptyDir: {}  # writable by non-root
 ---
 apiVersion: v1
 kind: Service
@@ -36,7 +41,7 @@ spec:
     app: nginx-demo
   ports:
   - protocol: TCP
-    port: 80       # external port
+    port: 80       # external
     targetPort: 8080  # container port
   type: ClusterIP
 ---
