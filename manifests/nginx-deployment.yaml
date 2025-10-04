@@ -13,25 +13,54 @@ spec:
       labels:
         app: demo-nginx
     spec:
+      initContainers:
+      - name: init-html
+        image: busybox
+        command: ['sh', '-c', 'echo "Hello from OpenShift!" > /usr/share/nginx/html/index.html']
+        volumeMounts:
+        - name: nginx-html
+          mountPath: /usr/share/nginx/html
       containers:
       - name: nginx
         image: nginx:1.25-alpine
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: html
-          mountPath: /usr/share/nginx/html
         - name: nginx-cache
           mountPath: /var/cache/nginx
-        command: ["/bin/sh"]
-        args:
-          - "-c"
-          - |
-            echo 'Hello from OpenShift!' > /usr/share/nginx/html/index.html && \
-            nginx -g 'daemon off;' -c /etc/nginx/nginx.conf -p /var/cache/nginx
+        - name: nginx-html
+          mountPath: /usr/share/nginx/html
       volumes:
-      - name: html
-        emptyDir: {}
       - name: nginx-cache
         emptyDir: {}
+      - name: nginx-html
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-nginx
+  namespace: demo-nginx
+spec:
+  selector:
+    app: demo-nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: demo-nginx
+  namespace: demo-nginx
+spec:
+  to:
+    kind: Service
+    name: demo-nginx
+  port:
+    targetPort: 80
+  tls:
+    termination: edge
 
