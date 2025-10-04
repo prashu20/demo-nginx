@@ -16,11 +16,27 @@ spec:
       - name: nginx
         image: nginx:1.25
         ports:
-        - containerPort: 80
+        - containerPort: 8080  # Use high port to avoid root requirement
         volumeMounts:
         - name: cache
-          mountPath: /var/cache/nginx
+          mountPath: /var/cache/nginx  # writable volume for cache
+        # Optional: avoid user directive warnings
+        securityContext:
+          allowPrivilegeEscalation: false
       volumes:
       - name: cache
-        emptyDir: {}
+        emptyDir: {}  # ephemeral volume, writable
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-demo
+spec:
+  selector:
+    app: nginx-demo
+  ports:
+  - protocol: TCP
+    port: 80       # external port
+    targetPort: 8080  # container port
+  type: ClusterIP
 
