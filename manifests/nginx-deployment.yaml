@@ -1,22 +1,22 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: demo-web
+  name: demo-nginx
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demo-web
-  namespace: demo-web
+  name: demo-nginx
+  namespace: demo-nginx
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: demo-web
+      app: demo-nginx
   template:
     metadata:
       labels:
-        app: demo-web
+        app: demo-nginx
     spec:
       containers:
       - name: web
@@ -32,11 +32,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: demo-web
-  namespace: demo-web
+  name: demo-nginx
+  namespace: demo-nginx
 spec:
   selector:
-    app: demo-web
+    app: demo-nginx
   ports:
   - protocol: TCP
     port: 80
@@ -46,12 +46,12 @@ spec:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: demo-web
-  namespace: demo-web
+  name: demo-nginx
+  namespace: demo-nginx
 spec:
   to:
     kind: Service
-    name: demo-web
+    name: demo-nginx
   port:
     targetPort: 80
   tls:
